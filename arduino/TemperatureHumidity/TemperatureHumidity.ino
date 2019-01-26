@@ -11,7 +11,7 @@
 #include <WiFiNINA.h>
 #include <ArduinoMqttClient.h>
 
-WiFiSSLClient net;
+WiFiClient net;
 MqttClient mqtt(net);
 
 // Temperature and Humidity Sensor
@@ -24,10 +24,10 @@ const char wifi_ssid[] = "workshop";
 const char wifi_password[] = "wifi-password";
 
 const char server[] = "broker.shiftr.io";
-const int port = 8883;
+const int port = 1883;
 const String clientId = "deviceX";
-const String username = "try";
-const String password = "try";
+const String username = "deviceX";
+const String password = "iotdevfest19";
 
 String temperatureTopic = "workshop/" + clientId + "/temperature";
 String humidityTopic = "workshop/" + clientId + "/humidity";
