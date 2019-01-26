@@ -9,7 +9,7 @@ Use the parts in the kit and assemble the hardware.
 Suggested wiring instructions:
 
 1. Place the solderless breadboard with A1 on the bottom left.
-1. Plug the Arduino MKR WiFi 1010 into the breadboard with the 5V pin in B60.
+1. Plug the Arduino MKR WiFi 1010 into the breadboard with the 5V pin in B63.
 1. Plug the LED into E44 and E45. Make sure the longer leg is in E45.
    * Run a 330 &#937; resistor (orange, orange, brown, gold) from the negative rail to D44.
    * Run a blue wire from A45 to A50 which is pin 6 on the Arduino.
@@ -23,7 +23,7 @@ Suggested wiring instructions:
    * Place a black wire from the negative rail to F35.
    * Run a green wire from G33 to G53 which is pin 2 on the Arduino.
 1. Place a button into E25, E27, F25, and F27 on the breadboard.
-   * Use a red wire from the positive rail to A5.
+   * Use a red wire from the positive rail to A25.
    * Use a yellow wire from G27 to J50 which is pin 5 on the Arduino.
 1. Pick up the Servo motor.
    * Plug a black wire into the brown wire on the servo and connect it to the negative rail.
