@@ -23,7 +23,7 @@ Suggested wiring instructions:
    * Place a black wire from the negative rail to F35.
    * Run a green wire from G33 to G53 which is pin 2 on the Arduino.
 1. Place a button into E25, E27, F25, and F27 on the breadboard.
-   * Use a red wire from the positive rail to A5.
+   * Use a red wire from the positive rail to A25.
    * Use a yellow wire from G27 to J50 which is pin 5 on the Arduino.
 1. Pick up the Servo motor.
    * Plug a black wire into the brown wire on the servo and connect it to the negative rail.
