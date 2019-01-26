@@ -9,7 +9,7 @@ Use the parts in the kit and assemble the hardware.
 Suggested wiring instructions:
 
 1. Place the solderless breadboard with A1 on the bottom left.
-1. Plug the Arduino MKR WiFi 1010 into the breadboard with the 5V pin in B60.
+1. Plug the Arduino MKR WiFi 1010 into the breadboard with the 5V pin in B63.
 1. Plug the LED into E44 and E45. Make sure the longer leg is in E45.
    * Run a 330 &#937; resistor (orange, orange, brown, gold) from the negative rail to D44.
    * Run a blue wire from A45 to A50 which is pin 6 on the Arduino.
