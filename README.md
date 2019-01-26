@@ -1,8 +1,4 @@
-# NOTE
-
-This is a temporary repository for IoT Dev Fest content development. Once we're done the content will be copied to a fresh repo for publication without all the messy history.
-
-# Building Wi-Fi Connected Devices with Arduino
+# Hands on IoT with Arduino
 [IoT DevFest](https://www.iotdevfest.com) Workshop - January 26, 2019
 
 <a href="https://iotdevfest.co"><img src="images/IoT-logo-2018-horizontal.png" alt="IoT DevFest Logo" width=50%></a>
