@@ -14,8 +14,8 @@ const char wifi_password[] = "wifi-password";
 const char server[] = "broker.shiftr.io";
 const int port = 1883;
 const String clientId = "deviceX";
-const String username = "deviceX";
-const String password = "iotdevfest19";
+const String username = "try";
+const String password = "try";
 
 String ledTopic = "workshop/" + clientId + "/led";
 
