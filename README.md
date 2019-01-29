@@ -29,4 +29,4 @@ Hardware Kits Provided by Arduino and Chariot Solutions
 
 ## Slides
 
-The slides are avaialble from [don.github.io/slides](don.github.io/slides/2019-01-26-iotdevfest)
+The slides are avaialble from [don.github.io/slides](https://don.github.io/slides/2019-01-26-iotdevfest)
