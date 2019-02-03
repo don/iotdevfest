@@ -1,7 +1,7 @@
 # Hands on IoT with Arduino
 [IoT DevFest](https://www.iotdevfest.com) Workshop - January 26, 2019
 
-<a href="https://iotdevfest.co"><img src="images/IoT-logo-2018-horizontal.png" alt="IoT DevFest Logo" width=50%></a>
+<a href="https://iotdevfest.com"><img src="images/IoT-logo-2018-horizontal.png" alt="IoT DevFest Logo" width=50%></a>
 
 Presented by
  * Sandeep Mistry - Arduino
