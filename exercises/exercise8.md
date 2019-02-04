@@ -1,44 +1,22 @@
 # Exercise 8: Running the Prototype
 
-Now that then config has been setup in the preview exercise, we are ready to upload the SmartToilet sketch on to our board.
+Now that then config has been setup in the preview exercise, we are ready to upload the AWS sketch on to our board.
 
 1. Upload the code to the board _Sketch -> Upload_
 1. Open the serial monitor to view status updates of what the sketch is doing.
 
-    On boot the sketch configures all the sensors and actuators attach on the breadboard, in a similiar way as the previous exercises. It also setups up the crypto element and along the certificate needed for the secure connection to AWS IoT Core. After this is complete it will attempt to connect to the local WiFi network and then once this is succesfully complete, it will attempt to connect to the AWS IoT MQTT broker.
-1. Open https://arduino-workshop-iot-devfest-2019.glitch.me/
+    On boot the sketch configures the temperature sensor and LED, in a similiar way as the previous exercises. It also setups up the crypto element and along the certificate needed for the secure connection to AWS IoT Core. After this is complete it will attempt to connect to the local WiFi network and then once this is succesfully complete, it will attempt to connect to the AWS IoT MQTT broker.
+1. Open https://itp-arduino-workshop.glitch.me/
 1. Login with the username and password provided by the instructors.
 1. Select your device in the drop down.
 
-    ![Screenshot of Dashboard](../images/dashboard-device-dropdown.png)
+    ![Screenshot of Dashboard](images/dashboard-device-dropdown.png)
 
-1. You will see a real-time graph of the environment data sent by the sketch. Every 10 seconds, sensor data is sent to the "things/device*XX*/environment" topic in JSON format. The cloud infrastructure saves this data to a database. The web page creates the graph with data from the database and then subscribes to the same topic appending new data to the graph as it arrives.
+1. You will see a real-time graph of the environment data sent by the sketch. Every 10 seconds, sensor data is sent to the "things/*0123456789ABCDEF01*/environment" topic in JSON format. The cloud infrastructure saves this data to a database. The web page creates the graph with data from the database and then subscribes to the same topic appending new data to the graph as it arrives.
 
-    ![Screenshot of Dashboard](../images/dashboard-device.png)
+    ![Screenshot of Dashboard](images/dashboard-device.png)
 
-1. Press the button on the Arduino to simulate a flush. The program sends a MQTT message to the "things/device*XX*/flush" topic and the servo will move 45 degrees. The flush count on the web page will increase by one. The cloud infrastructure saves this event to a database.
-
-    ![Screenshot of Dashboard](../images/dashboard-flush-increase-count.png)
-
-1. Click the "Remote flush button" on the web page, the browser will send a MQTT message to the "things/device*XX*/remoteflush" topic. When the board receives the message, it will perform a flush operation.
-
-    ![Screenshot of Dashboard](../images/dashboard-remote-flush.png)
-
-1. Check the "Out of service" checkbox on the webpage, the browser will send an "on" message to the "things/device*XX*/outofservice" topic. This activates the out of service indicator LED. When in out of service mode, the button does not trigger. Press the button to confirm no flushing operation is complete.
-
-    ![Screenshot of Dashboard](../images/dashboard-out-of-service.png)
-
-1. Uncheck the "Out of service" checkbox on the webpage, the browser will send an "off" message to the "things/device*XX*/outofservice" topic. The out of service indicator LED will turn off, and flushes can now be triggered via the button.
-
-    ![Screenshot of Dashboard](../images/dashboard-back-in-service.png)
-
-1. Select "All things" in the drop down on the webpage. The web page is subscribed to the "things/+/flush" topic (with wildcard for device id). You will see a global flush count. Press the button to trigger a flush, the count will increment.
-
-    ![Screenshot of Dashboard](../images/dashboard-all-flush-count.png)
-
-1. Ask your neighbour to trigger a flush, the count will increment.
-
-    ![Screenshot of Dashboard](../images/dashboard-all-flush-count-increase.png)
+1. Use the radio buttons or range slider to control the LED on your device. The program sends a  MQTT message to the "things/*0123456789ABCDEF01*/led" topic with a brightness value.
 
 ## Notes
 
@@ -46,7 +24,7 @@ Now that then config has been setup in the preview exercise, we are ready to upl
 
 Incoming MQTT messages are written to the console. If you open the browser debug console, you can view them.
 
-![Screenshot of Dashboard with Developer Tools open](../images/dashboard-developer-tools.png)
+![Screenshot of Dashboard with Developer Tools open](images/dashboard-developer-tools.png)
 
 ### Device Policies
 
@@ -83,7 +61,10 @@ The cloud infrastructure has been setup in a restrictive manner. AWS Core IoT ha
         }
 
 
+## Server Code
+
+You can view the server code on Glitch https://glitch.com/edit/#!/itp-arduino-workshop
+
 ## Bonus
 
-* Use the light sensor to detect the usuage time in seconds and send this time up to the "things/device*XX*/usage" topic.
-* If the flush button is not pressed within 30 seconds of activity present, automatically trigger a flush on the device. 
+The device serial number is a great way to manage a large number of devices, but it doesn't generate a friendly device name. Try creating a new X.509 certificate with a different Common Name. Adjust the Arduino code so the device can still connect. Remember there is an AWS policy in place for our Core IoT implementation that requires the client id to match the common name in the certificate.

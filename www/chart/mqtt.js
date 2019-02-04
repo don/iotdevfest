@@ -1,4 +1,5 @@
 let client;
+let broker = 'wss://mqtt.iotwork.shop:8083';
 
 function connect() {
   console.log('Connecting');
@@ -8,7 +9,7 @@ function connect() {
     return;
   }
 
-  client = mqtt.connect('wss://broker.shiftr.io', {
+  client = mqtt.connect(broker, {
     username: username.value,
     password: password.value 
   });
@@ -17,9 +18,9 @@ function connect() {
     console.log('connected');
     connectButton.hidden = true;
     disconnectButton.hidden = false;
-    document.querySelectorAll('input[type=text]').forEach(e => e.disabled = true);
-    client.subscribe(`workshop/${deviceId.value}/temperature`);
-    client.subscribe(`workshop/${deviceId.value}/humidity`);
+    document.querySelectorAll('input[type=text],input[type=password]').forEach(e => e.disabled = true);
+    client.subscribe(`itp/${deviceId.value}/temperature`);
+    client.subscribe(`itp/${deviceId.value}/humidity`);
   });
 
   client.on('message', function (topic, message) {
@@ -53,6 +54,6 @@ function disconnect() {
   }
   connectButton.hidden = false;
   disconnectButton.hidden = true;
-  document.querySelectorAll('input[type=text]').forEach(e => e.disabled = false);
+  document.querySelectorAll('input[type=text],input[type=password]').forEach(e => e.disabled = false);
 }
 

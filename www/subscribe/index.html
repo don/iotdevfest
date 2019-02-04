@@ -17,19 +17,23 @@
             <legend>MQTT</legend>
             <div>
                 <label for="username">Username</label>
-                <input type=text name=username id=username value=try />
+                <input type=text name=username id=username />
             </div>
             <div>
                 <label for="password">Password</label>
-                <input type=password name=password id=password value=try />
+                <input type=password name=password id=password />
+            </div>
+            <div>
+                <label for="password">Broker</label>
+                <input type=text name=broker id=broker value="wss://mqtt.iotwork.shop:8083" size=40 />
             </div>
             <div>
                 <label for="topic">Topic</label>
                 <input type=text name=topic id=topic value=# size=40/>
             </div>
             <div>
-                <button id=connectButton onclick="connect(); return false;">Connect</button>
-                <button id=disconnectButton onclick="disconnect(); return false;" hidden=true>Disconnect</button>
+                <button id=connectButton onclick="event.preventDefault(); connect(); return false;">Connect</button>
+                <button id=disconnectButton onclick="event.preventDefault(); disconnect(); return false;" hidden=true>Disconnect</button>
             </div>
         </fieldset>
     </form>

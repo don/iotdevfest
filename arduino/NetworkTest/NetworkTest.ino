@@ -1,4 +1,3 @@
-// IoT Workshop
 // Network Test
 //
 // Run this sketch to test that your Arduino connects to the network
@@ -6,7 +5,12 @@
 // This code is a modified version of Arturo Guadalupi's WiFiNINA WiFiSSLClient example
 
 #include <SPI.h>
+#ifdef ARDUINO_SAMD_MKR1000
+#include <WiFi101.h>
+#define WL_NO_MODULE WL_NO_SHIELD 
+#else
 #include <WiFiNINA.h>
+#endif
 
 #include "arduino_secrets.h" 
 ///////please enter your sensitive data in the Secret tab/arduino_secrets.h
@@ -14,7 +18,7 @@ char ssid[] = SECRET_SSID;    // your network SSID (name)
 char pass[] = SECRET_PASS;    // your network password (use for WPA, or use as key for WEP)
 
 int status = WL_IDLE_STATUS;
-char server[] = "iotwork.shop";    
+char server[] = "iotwork.shop";   
 
 // Initialize the Ethernet client library
 WiFiSSLClient client;

@@ -1,38 +1,14 @@
-/**
-   Cloud infrastructure specification
-
-   1. Devices must connect to the the MQTT broker with a client id matching
-      the devices id in the common certificate.
-
-   2. If device is disconnected from WiFi or the MQTT broker, the out of
-      service light must be turned on and all flush triggers from the button
-      should be ignored.
-
-   3. When the button is pressed and the device is in service, the servo
-      is moved and a empty MQTT message is sent to the "things/<device id>/flush" topic.
-
-   4. Environment data must be sent to the "things/<device id>/environment" topic
-      every 10 seconds, in JSON format:
-
-      {
-        "temperature": <number>, // °F
-        "humidity": <number>, // %
-        "light": <number> // raw value
-      }
-
-   5. When a MQTT message is received on the "things/<device id>/remoteflush" topic,
-      a flush must be triggered the same way as if the button was pressed (see 3).
-
-   6. When a MQTT message is received on the "things/<device id>/outofservice" topic,
-      if the paylaod is "on" out of service must be enabled, if the payload is "off"
-      out of service must be disabled.
-
-*/
-
+#ifdef ARDUINO_SAMD_MKR1000
+#include <WiFi101.h>
+#else
 #include <WiFiNINA.h>
+#endif
 #include <ArduinoBearSSL.h>
 #include <ArduinoECCX08.h>
 #include <ArduinoMqttClient.h>
+
+// Temperature and Humidity Sensor
+#include <DHT.h>
 
 #include "config.h"
 
@@ -40,8 +16,14 @@ WiFiClient wifiClient;
 BearSSLClient sslClient(wifiClient);
 MqttClient mqttClient(sslClient);
 
+const int dhtPin = 7;
+DHT dht(dhtPin, DHT22);
+
 String clientId;
 
+// Publish every 10 seconds for the workshop. Real world apps need this data every 5 or 10 minutes.
+unsigned long publishInterval = 10 * 1000;
+unsigned long lastMillis = 0;
 
 unsigned long getTime() {
   return WiFi.getTime();
@@ -50,8 +32,14 @@ unsigned long getTime() {
 void setup() {
   Serial.begin(9600);
 
-  // Comment the next line disable waiting for a serial connection for debugging
+  // Comment the next line to NOT wait for a serial connection for debugging
   while (!Serial);
+
+  // initialize digital pin LED_BUILTIN as an output.
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  // initialize temperature sensor
+  dht.begin();
 
   // set a callback to get the current time
   // used for certification validation
@@ -62,12 +50,10 @@ void setup() {
     while (1);
   }
 
-  // use the device id from config.h as the client id
-  clientId = DEVICE_ID;
-  // alternatively we could use the serial number of the ECCx08 chip
-  // if the certificate is configure to use that as the common name
-  // clientId = ECCX08.serialNumber();
-
+  // Use the serial number of the ECCx08 chip for the clientId
+  // The client must match the common name in the X.509 certificate
+  // If they don't match AWS Core IoT is configured to reject the connection
+  clientId = ECCX08.serialNumber();
   Serial.print("Client id = ");
   Serial.println(clientId);
 
@@ -84,41 +70,21 @@ void setup() {
 
 void loop() {
   if (WiFi.status() != WL_CONNECTED) {
-    //
-    // enable out of service
-    //
-
     connectWiFi();
-
-    //
-    // disable out of service
-    //
   }
 
   if (!mqttClient.connected()) {
-    // MQTT client is disconnected, connect
-
-    //
-    // enable out of service
-    //
-
     connectMQTT();
-
-    //
-    // disable out of service
-    //
   }
 
   // poll for new MQTT messages and send keep alives
   mqttClient.poll();
 
-  //
-  // check if button is pressed
-  //
+  if (millis() - lastMillis > publishInterval) {
+    lastMillis = millis();
 
-  //
-  // publish sensor data periodically ...
-  //
+    sendSensorData();
+  }
 }
 
 void connectWiFi() {
@@ -156,23 +122,51 @@ void connectMQTT() {
   Serial.println("You're connected to the MQTT broker");
   Serial.println();
 
-  //
-  // Subscribe to topics
-  //
+  mqttClient.subscribe("things/" + clientId + "/led");
 }
 
 void messageReceived(int messageSize) {
   String topic = mqttClient.messageTopic();
-  String payload = mqttClient.readString();
 
   // we received a message, print out the topic and contents
   Serial.print("Received a message with topic '");
   Serial.print(topic);
   Serial.print("', length ");
   Serial.print(messageSize);
-  Serial.println(" bytes:");
+  Serial.println(" bytes");
 
-  //
-  // Process incoming message
-  //
+  if (topic.endsWith("/led")) {
+    int payload = mqttClient.parseInt();
+    // map incoming value between 0 and 100 to a 1 byte value between 0 and 255
+    int brightness = map(payload, 0, 100, 0, 255);
+    Serial.print(payload);
+    Serial.print(" -> ");
+    Serial.println(brightness);
+    analogWrite(LED_BUILTIN, brightness); 
+  
+  } else {
+    Serial.print("Ignoring message on topic ");
+    Serial.println(topic);
+  }
+}
+
+void sendSensorData() {
+  float temperature = dht.readTemperature(true); // true for °F
+  float humidity = dht.readHumidity();
+
+  Serial.print(temperature);
+  Serial.print("°F ");
+  Serial.print(humidity);
+  Serial.println("% RH");
+
+  // AWS prefers JSON
+  mqttClient.beginMessage("things/" + clientId + "/environment");
+  mqttClient.print("{");
+  mqttClient.print("\"temperature\":");
+  mqttClient.print(temperature);
+  mqttClient.print(", ");
+  mqttClient.print("\"humidity\":");
+  mqttClient.print(humidity);
+  mqttClient.print("}");
+  mqttClient.endMessage();
 }

@@ -2,22 +2,20 @@
 // Control a LED via MQTT
 
 #include <SPI.h>
+#ifdef ARDUINO_SAMD_MKR1000
+#include <WiFi101.h>
+#define WL_NO_MODULE WL_NO_SHIELD 
+#else
 #include <WiFiNINA.h>
+#endif
 #include <ArduinoMqttClient.h>
 
-WiFiClient net;
+#include "config.h"
+
+WiFiSSLClient net;
 MqttClient mqtt(net);
 
-const char wifi_ssid[] = "workshop";
-const char wifi_password[] = "wifi-password";
-
-const char server[] = "broker.shiftr.io";
-const int port = 1883;
-const String clientId = "deviceX";
-const String username = "try";
-const String password = "try";
-
-String ledTopic = "workshop/" + clientId + "/led";
+String ledTopic = "itp/" + DEVICE_ID + "/led";
 
 int status = WL_IDLE_STATUS;
 
@@ -38,11 +36,16 @@ void setup() {
 }
 
 void loop() {
-  mqtt.poll();
+  if (WiFi.status() != WL_CONNECTED) {
+    connectWiFi();
+  }
 
   if (!mqtt.connected()) {
     connectMQTT();
   }
+  
+  // poll for new MQTT messages and send keep alives
+  mqtt.poll();
 }
 
 void connectWiFi() {
@@ -56,15 +59,26 @@ void connectWiFi() {
   Serial.print("WiFi firmware version ");
   Serial.println(WiFi.firmwareVersion());
   
-  // attempt to connect to WiFi network
-  while (status != WL_CONNECTED) {
-    Serial.print("Attempting to connect to SSID: ");
-    Serial.println(wifi_ssid);
-    status = WiFi.begin(wifi_ssid, wifi_password);
+//  // attempt to connect to WiFi network
+//  while (status != WL_CONNECTED) {
+//    Serial.print("Attempting to connect to SSID: ");
+//    Serial.println(WIFI_SSID);
+//    status = WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+//
+//    // wait 3 seconds for connection
+//    delay(3000);
+//  }
 
-    // wait 3 seconds for connection
+  Serial.print("Attempting to connect to SSID: ");
+  Serial.print(WIFI_SSID);
+  Serial.print(" ");
+
+  while (WiFi.begin(WIFI_SSID, WIFI_PASSWORD) != WL_CONNECTED) {
+    // failed, retry
+    Serial.print(".");
     delay(3000);
   }
+
   Serial.println("Connected to WiFi");
   printWiFiStatus();
 
@@ -72,12 +86,12 @@ void connectWiFi() {
 
 void connectMQTT() {
   Serial.print("Connecting MQTT...");
-  mqtt.setId(clientId);
-  mqtt.setUsernamePassword(username, password);
+  mqtt.setId(DEVICE_ID);
+  mqtt.setUsernamePassword(MQTT_USER, MQTT_PASSWORD);
 
-  while (!mqtt.connect(server, port)) {
+  while (!mqtt.connect(MQTT_BROKER, MQTT_PORT)) {
     Serial.print(".");
-    delay(500);
+    delay(5000);
   }
 
   mqtt.subscribe(ledTopic);

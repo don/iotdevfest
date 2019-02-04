@@ -8,7 +8,7 @@ function connect() {
     return;
   }
 
-  client = mqtt.connect('wss://broker.shiftr.io', {
+  client = mqtt.connect(broker.value, {
     username: username.value,
     password: password.value 
   });
@@ -18,7 +18,7 @@ function connect() {
     console.log('connected');
     connectButton.hidden = true;
     disconnectButton.hidden = false;
-    document.querySelectorAll('input[type=text]').forEach(e => e.disabled = true);
+    document.querySelectorAll('input[type=text],input[type=password]').forEach(e => e.disabled = true);
     client.subscribe(topic.value);
   })
 
@@ -40,6 +40,6 @@ function disconnect() {
   }
   connectButton.hidden = false;
   disconnectButton.hidden = true;
-  document.querySelectorAll('input[type=text]').forEach(e => e.disabled = false);
+  document.querySelectorAll('input[type=text],input[type=password]').forEach(e => e.disabled = false);
 }
 

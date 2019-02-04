@@ -1,45 +1,40 @@
 // IoT Workshop
 // Send temperature and humidity data to MQTT
-// Control a LED from MQTT
 //
-// Uses WiFiNINA https://www.arduino.cc/en/Reference/WiFiNINA
+// Uses WiFi101 https://www.arduino.cc/en/Reference/WiFi101 (MKR1000)
+// Uses WiFiNINA https://www.arduino.cc/en/Reference/WiFiNINA (MKR WiFi 1010)
 // Arduino MQTT Client Library https://github.com/arduino-libraries/ArduinoMqttClient
 // Adafruit DHT Sensor Library https://github.com/adafruit/DHT-sensor-library
 // Adafruit Unified Sensor Library https://github.com/adafruit/Adafruit_Sensor
 //
 
 #include <SPI.h>
+#ifdef ARDUINO_SAMD_MKR1000
+#include <WiFi101.h>
+#define WL_NO_MODULE WL_NO_SHIELD 
+#else
 #include <WiFiNINA.h>
+#endif
 #include <ArduinoMqttClient.h>
 
-WiFiClient net;
+#include "config.h"
+
+WiFiSSLClient net;
 MqttClient mqtt(net);
 
 // Temperature and Humidity Sensor
 #include <DHT.h>
 #define DHTTYPE DHT22
-#define DHTPIN  2
+#define DHTPIN  7
 DHT dht(DHTPIN, DHTTYPE);
 
-const char wifi_ssid[] = "workshop";
-const char wifi_password[] = "wifi-password";
-
-const char server[] = "broker.shiftr.io";
-const int port = 1883;
-const String clientId = "deviceX";
-const String username = "try";
-const String password = "try";
-
-// MQTT topic location/device/measurement
-String temperatureTopic = "workshop/" + clientId + "/temperature";
-String humidityTopic = "workshop/" + clientId + "/humidity";
-String ledTopic = "workshop/" + clientId + "/led";
+String temperatureTopic = "itp/" + DEVICE_ID + "/temperature";
+String humidityTopic = "itp/" + DEVICE_ID + "/humidity";
+String ledTopic = "itp/" + DEVICE_ID + "/led";
 
 // Publish every 10 seconds for the workshop. Real world apps need this data every 5 or 10 minutes.
 unsigned long publishInterval = 10 * 1000;
 unsigned long lastMillis = 0;
-
-int status = WL_IDLE_STATUS;
 
 void setup() {
   Serial.begin(9600);
@@ -47,11 +42,11 @@ void setup() {
   // Uncomment next line to wait for a serial connection
   // while (!Serial) { }
  
+  // initialize temperature sensor
+  dht.begin();
+
   // initialize digital pin LED_BUILTIN as an output.
   pinMode(LED_BUILTIN, OUTPUT);
-
-  // initialize temperature sensor
-  dht.begin();   
  
   Serial.println("Connecting WiFi");
   connectWiFi();
@@ -61,11 +56,16 @@ void setup() {
 }
 
 void loop() {
-  mqtt.poll();
+  if (WiFi.status() != WL_CONNECTED) {
+    connectWiFi();
+  }
 
   if (!mqtt.connected()) {
     connectMQTT();
   }
+  
+  // poll for new MQTT messages and send keep alives
+  mqtt.poll();
 
   if (millis() - lastMillis > publishInterval) {
     lastMillis = millis();
@@ -84,7 +84,8 @@ void loop() {
 
     mqtt.beginMessage(humidityTopic);
     mqtt.print(humidity); 
-    mqtt.endMessage();  }  
+    mqtt.endMessage();
+  }  
 }
 
 void connectWiFi() {
@@ -97,16 +98,17 @@ void connectWiFi() {
 
   Serial.print("WiFi firmware version ");
   Serial.println(WiFi.firmwareVersion());
-    
-  // attempt to connect to WiFi network
-  while (status != WL_CONNECTED) {
-    Serial.print("Attempting to connect to SSID: ");
-    Serial.println(wifi_ssid);
-    status = WiFi.begin(wifi_ssid, wifi_password);
+  
+  Serial.print("Attempting to connect to SSID: ");
+  Serial.print(WIFI_SSID);
+  Serial.print(" ");
 
-    // wait 3 seconds for connection
+  while (WiFi.begin(WIFI_SSID, WIFI_PASSWORD) != WL_CONNECTED) {
+    // failed, retry
+    Serial.print(".");
     delay(3000);
   }
+
   Serial.println("Connected to WiFi");
   printWiFiStatus();
 
@@ -114,16 +116,25 @@ void connectWiFi() {
 
 void connectMQTT() {
   Serial.print("Connecting MQTT...");
-  mqtt.setId(clientId);
-  mqtt.setUsernamePassword(username, password);
+  mqtt.setId(DEVICE_ID);
+  mqtt.setUsernamePassword(MQTT_USER, MQTT_PASSWORD);
 
-  while (!mqtt.connect(server, port)) {
+  while (!mqtt.connect(MQTT_BROKER, MQTT_PORT)) {
     Serial.print(".");
-    delay(500);
+    delay(5000);
   }
 
   mqtt.subscribe(ledTopic);
   Serial.println("connected.");
+
+  // Send connect and disconnect announcements similar to AWS Core IoT
+  // https://docs.aws.amazon.com/iot/latest/developerguide/life-cycle-events.html
+  mqtt.beginMessage("presence/connected/" + DEVICE_ID);
+  mqtt.endMessage();
+
+  // The will gets sent by the broker when the client disconnects
+  mqtt.beginWill("presence/disconnected/" + DEVICE_ID, false, 1);
+  mqtt.endWill();
 }
 
 void messageReceived(int messageSize) {

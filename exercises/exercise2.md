@@ -1,38 +1,23 @@
 # Exercise 2: Assemble the Hardware
 
-Use the parts in the kit and assemble the hardware.
-
 ## Wiring
 
-![Fritzing Diagram](../images/wiring_bb.png)
+![Fritzing Diagram](images/wiring_bb.png)
 
 Suggested wiring instructions:
 
 1. Place the solderless breadboard with A1 on the bottom left.
-1. Plug the Arduino MKR WiFi 1010 into the breadboard with the 5V pin in B63.
-1. Plug the LED into E44 and E45. Make sure the longer leg is in E45.
-   * Run a 330 &#937; resistor (orange, orange, brown, gold) from the negative rail to D44.
-   * Run a blue wire from A45 to A50 which is pin 6 on the Arduino.
-1. Plug the CdS Photoresistor into G38 and G41.
-   * Use a red wire from the positive rail to F41.
-   * Put a 10,000 &#937; resistor (brown, black, orange, gold) from the negative rail to F38.
-   * Use a purple wire from I38 to J62 which is pin A0 on the Arduino.
-1. Plug the DHT-22 into J32.
-   * Use a red wire from the positive rail to F32.
-   * Put a 10,000 &#937; resistor (brown, black, orange, gold) from the positive rail to F33.
-   * Place a black wire from the negative rail to F35.
-   * Run a green wire from G33 to G53 which is pin 2 on the Arduino.
-1. Place a button into E25, E27, F25, and F27 on the breadboard.
-   * Use a red wire from the positive rail to A25.
-   * Use a yellow wire from G27 to J50 which is pin 5 on the Arduino.
-1. Pick up the Servo motor.
-   * Plug a black wire into the brown wire on the servo and connect it to the negative rail.
-   * Plug a red wire into the red wire on the servo and connect it to A63 which is the 5V pin on the Arduino.
-   * Plug an orange wire into the orange wire on the servo and connect it to A51 which is pin 7 on the Arduino.
-   * Note that only the servo is powered with 5 volts. Everything else uses 3.3 volts.
-1. Run a black wire from A60 to the negative rail.
-1. Run a red wire from the Arduino Vcc pin, A61, to the positive rail. The Vcc pin supplies 3.3 volts.
-
+1. Plug the Arduino MKR WiFi 1000 into the breadboard with the 5V pin in C30.
+1. Plug the DHT-22 into J1.
+   * Use a red wire from the positive rail to F1
+   * Add a 10,000 &#937; resistor (brown, black, orange, gold) from the positive rail to F2.
+   * Place a black wire from the negative rail to F4
+   * Run a yellow wire from G2 to A18 which is pin 7 on the Arduino.
+1. Plug the LED into J9 and J10. Make sure the longer leg is in J10.
+   * Run a 220 &#937; or 330 &#937; resistor from the negative rail to F9
+   * Run a blue wire from F10 to A17 which is pin 6 on the Arduino.
+1. Run a black wire from A27 to the negative rail
+1. Run a red wire from A28 to the positive rail
 
 ## Hardware Test
 
@@ -46,7 +31,37 @@ Suggested wiring instructions:
 1. To stop the program press the RST button on the board.
     * To restart the test, close the _Serial Monitor_ dialog and open it again.
 
-![Arduino serial monitor with hardware test results](../images/hardware-test.png)
+![Arduino serial monitor with hardware test results](images/hardware-test.png)
+
+## Register MAC address with ITP Sandbox Network
+
+If you're using an Arduino from the ER you can skip this step. 
+
+In order to join the `itpsandbox` wireless network, the MAC address of the device must be registered with [NYU-NET](https://computer.registration.nyu.edu/). Use the [MacAddress sketch](../arduino/MacAddress/MacAddress.ino) to get the MAC address for your device. 
+
+[Tom Igoe's documentation](https://itp.nyu.edu/networks/tutorials/itp-network-connections/) has more details about the process.
+
+
+
+## Update TLS Certificates
+
+Skip this section if you're using a MKR WiFi 1010.
+
+The MKR1000 needs the root certifcates for any websites accessed via SSL. There is a utility to fetch and store these certificates.
+
+1. Open the WiFi101 FirmwareUpdater sketch _File -> Examples -> WiFi101 -> FirmwareUpdater_
+1. Upload the code to the board _Sketch -> Upload_
+1. Open the Firmware Updater _Tools -> WiFi101 / WiFiNINA Firmware Updater_
+1. Select the port of your MKR1000 in section 1
+1. Click the "Add Domain" button in section 3
+1. Enter "iotwork.shop" and press the OK button
+1. Press the "Upload Certificates to WiFi module" button
+1. Wait for the success message
+
+![Arduino certificate tool screenshot](images/certificate-update.png)
+
+
+For more information see the Certificate Uploading section of the [WiFi101 Documentation](https://www.arduino.cc/en/Tutorial/FirmwareUpdater)
 
 ## Network Test
 
@@ -56,6 +71,6 @@ Suggested wiring instructions:
 1. Open the serial monitor _Tools -> Serial Monitor_
 1. Look for the message "IT WORKS!"
 
-![Arduino serial monitor with network test results](../images/network-test.png)
+![Arduino serial monitor with network test results](images/network-test.png)
 
 Next [Exercise 3: Sending data using MQTT](exercise3.md)
